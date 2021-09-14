@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ReservationRepository;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -29,6 +30,11 @@ class Reservation
      */
     private $space;
 
+    /**
+     * @ORM\Column(type="date")
+     */
+    private $date;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -54,6 +60,18 @@ class Reservation
     public function setSpace(?Space $space): self
     {
         $this->space = $space;
+
+        return $this;
+    }
+
+    public function getDate(): ?\DateTimeInterface
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTimeInterface $date): self
+    {
+        $this->date = $date;
 
         return $this;
     }

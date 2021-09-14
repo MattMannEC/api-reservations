@@ -8,7 +8,6 @@ use App\Entity\Vendor;
 use DateTime;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,14 +20,16 @@ class ReservationsController extends AbstractController
     public function reservations(): Response
     {
         $repository = $this->getDoctrine()->getRepository(Reservation::class);
+
         return new Response($this->serialize($repository->findAll()), Response::HTTP_OK, [
             'Content-Type' => 'application/json',
         ]);
     }
 
-    public function serialize($data)
+    public function serialize($data) //service
     {
         $seriaizer = SerializerBuilder::create()->build();
+
         return $seriaizer->serialize($data, 'json');
     }
 
@@ -38,29 +39,34 @@ class ReservationsController extends AbstractController
     public function vendors(): Response
     {
         $repository = $this->getDoctrine()->getRepository(Vendor::class);
+
         return new Response($this->serialize($repository->findAll()), Response::HTTP_OK, [
             'Content-Type' => 'application/json',
         ]);
     }
 
     /**
-     * @Route("/reservations/store", name="reservation_store", methods="post")
+     * @Route("/reservations/store", name="reservation_store")
      */
     public function store(Request $request)
     {
-        $entityManager = $this->getDoctrine()->getManager();
-        $reservation = new Reservation();
         $vendorRepository = $this->getDoctrine()->getRepository(Vendor::class);
-        $spaceRepository = $this->getDoctrine()->getRepository(Space::class);
-        $reservation->setSpace($spaceRepository->find($request->request->get('space_id')));
-        $reservation->setVendor($vendorRepository->find($request->request->get('vendor_id')));
-        $datetime = new DateTime($request->request->get('date'));
-        $reservation->setDate($datetime);
+        $vendor = $vendorRepository->find(2);
+        $datetime = new DateTime('2020-01-04');
 
-        $entityManager->persist($reservation);
-        $entityManager->flush();
+        if ($vendor->canBook($datetime->format('Y-m-d'))) {
+            $entityManager = $this->getDoctrine()->getManager();
+            $reservation = new Reservation();
+            $spaceRepository = $this->getDoctrine()->getRepository(Space::class);
+            $reservation->setSpace($spaceRepository->find(2));
+            $reservation->setVendor($vendor);
+            $reservation->setDate($datetime);
+            $entityManager->persist($reservation);
+            $entityManager->flush();
+            $vendor->setMessages("Success");
+        }
 
-        return new Response($this->serialize($reservation), Response::HTTP_OK, [
+        return new Response($this->serialize($vendor->getMessages()), Response::HTTP_OK, [
             'Content-Type' => 'application/json',
         ]);
     }
