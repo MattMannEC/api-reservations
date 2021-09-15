@@ -10,7 +10,7 @@ Class Helper
     /**
      * Get the start and end date of a week from a given date
      */
-    public static function getWeekStartAndEnd($date)
+    public static function getWeekStartAndEnd($date): array
     {
         $datetime = new DateTime($date);
         $datetime->setISODate($datetime->format('Y'), $datetime->format('W'), 1);
@@ -21,7 +21,7 @@ Class Helper
         return $result;
     }
 
-    public static function serialize($data)
+    public static function serialize($data): string
     {
         $seriaizer = SerializerBuilder::create()->build();
 
