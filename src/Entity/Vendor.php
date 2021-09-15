@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\VendorRepository;
-use App\Service\Helper;
+use App\Service\HelperService;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -99,7 +99,7 @@ class Vendor
 
     public function hasThree($date)
     {
-        $result = Helper::getWeekStartAndEnd($date);
+        $result = HelperService::getWeekStartAndEnd($date);
 
         return (count($this->reservations->filter(function ($p) use ($result) {
             return $p->getDate()->format('Y-m-d') >= $result['week_start'] &&
@@ -114,20 +114,5 @@ class Vendor
         return $this->reservations->exists(function ($key, $element) use ($datetime) {
             return $element->getDate()->format('Y-m-d') === $datetime->format('Y-m-d');
         });
-    }
-
-    /**
-     * Check if this vendor is allowed to make this reservation
-     */
-    public function canBook($date): bool
-    {
-        if ($this->hasReservation($date)) {
-            $this->messages[] = "You have already reserved for this day...";
-        }
-        if ($this->hasThree($date)) {
-            $this->messages[] = "You have already reserved three for that week...";
-        }
-
-        return empty($this->messages);
     }
 }

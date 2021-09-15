@@ -4,7 +4,7 @@ namespace App\Service;
 
 use DateTime;
 
-Class Helper
+Class HelperService
 {
     /**
      * Get the start and end date of a week from a given date

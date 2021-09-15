@@ -3,11 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Reservation;
-use App\Entity\Space;
 use App\Entity\Vendor;
+use App\Service\ReservationService;
 use DateTime;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,7 +27,7 @@ class ReservationsController extends AbstractController
         ]);
     }
 
-    public function serialize($data) //service
+    public function serialize($data)
     {
         $seriaizer = SerializerBuilder::create()->build();
 
@@ -48,25 +49,14 @@ class ReservationsController extends AbstractController
     /**
      * @Route("/reservations/store", name="reservation_store")
      */
-    public function store(Request $request)
+    public function store(Request $request, ReservationService $rs)
     {
         $vendorRepository = $this->getDoctrine()->getRepository(Vendor::class);
-        $vendor = $vendorRepository->find(2);
-        $datetime = new DateTime('2020-01-04');
+        $vendor = $vendorRepository->find($request->request->get('vendor_id'));
+        $date = $request->request->get('date');
+        $rs->makeReservation($vendor, $date);
 
-        if ($vendor->canBook($datetime->format('Y-m-d'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $reservation = new Reservation();
-            $spaceRepository = $this->getDoctrine()->getRepository(Space::class);
-            $reservation->setSpace($spaceRepository->find(2));
-            $reservation->setVendor($vendor);
-            $reservation->setDate($datetime);
-            $entityManager->persist($reservation);
-            $entityManager->flush();
-            $vendor->setMessages("Success");
-        }
-
-        return new Response($this->serialize($vendor->getMessages()), Response::HTTP_OK, [
+        return new Response($this->serialize($rs->messages), Response::HTTP_OK, [
             'Content-Type' => 'application/json',
         ]);
     }

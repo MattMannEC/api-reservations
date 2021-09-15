@@ -25,12 +25,6 @@ class Reservation
     private $vendor;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Space::class, inversedBy="reservations")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $space;
-
-    /**
      * @ORM\Column(type="date")
      */
     private $date;
@@ -48,18 +42,6 @@ class Reservation
     public function setVendor(?Vendor $vendor): self
     {
         $this->vendor = $vendor;
-
-        return $this;
-    }
-
-    public function getSpace(): ?Space
-    {
-        return $this->space;
-    }
-
-    public function setSpace(?Space $space): self
-    {
-        $this->space = $space;
 
         return $this;
     }
