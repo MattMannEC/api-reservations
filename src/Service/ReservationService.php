@@ -10,29 +10,30 @@ use Doctrine\ORM\EntityManagerInterface;
 Class ReservationService
 {
     private $em;
-    public $messages = [];
+    private $messages = [];
 
-    public function __construct(EntityManagerInterface $em) {
+    public function __construct(EntityManagerInterface $em)
+    {
         $this->em = $em;
     }
 
-    public function isAvailable($date)
+    public function isAvailable($date): bool
     {
         $repository = $this->em->getRepository(Reservation::class);
         $datetime = new DateTime($date);
         $reservations = $repository->findBy(
             ['date' => $datetime],
         );
-        return count($reservations) < $this->getMax($date);
+        return count($reservations) < $this->getCapacity($date);
     }
 
-    public function isWeekday($date)
+    public function isWeekday($date): bool
     {
         $datetime = new DateTime($date);
         return in_array($datetime->format('N'), [1, 2, 3, 4, 5]);
     }
 
-    public function getMax($date)
+    public function getCapacity($date): int
     {
         $datetime = new DateTime($date);
         if ($datetime->format('N') === '5') {
@@ -44,16 +45,19 @@ Class ReservationService
     public function makeReservation(Vendor $vendor, $date): void
     {
         if ($this->canBook($vendor, $date)) {
-            $vendor->getMessages();
             $reservation = new Reservation();
             $reservation->setVendor($vendor);
             $datetime = new DateTime($date);
             $reservation->setDate($datetime);
-
-            $this->messages[] = "Success";
             $this->em->persist($reservation);
             $this->em->flush();
+            $this->messages[] = "Success";
         }
+    }
+
+    public function getMessages(): array
+    {
+        return $this->messages;
     }
 
     /**

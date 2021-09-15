@@ -3,8 +3,9 @@
 namespace App\Service;
 
 use DateTime;
+use JMS\Serializer\SerializerBuilder;
 
-Class HelperService
+Class Helper
 {
     /**
      * Get the start and end date of a week from a given date
@@ -16,7 +17,16 @@ Class HelperService
         $result['week_start'] = $datetime->format('Y-m-d');
         $datetime->modify('+6days');
         $result['week_end'] = $datetime->format('Y-m-d');
+
         return $result;
     }
+
+    public static function serialize($data)
+    {
+        $seriaizer = SerializerBuilder::create()->build();
+
+        return $seriaizer->serialize($data, 'json');
+    }
+
 
 }

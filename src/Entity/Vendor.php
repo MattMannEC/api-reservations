@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\VendorRepository;
-use App\Service\HelperService;
+use App\Service\Helper;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -97,9 +97,9 @@ class Vendor
         return $this;
     }
 
-    public function hasThree($date)
+    public function hasThree($date): bool
     {
-        $result = HelperService::getWeekStartAndEnd($date);
+        $result = Helper::getWeekStartAndEnd($date);
 
         return (count($this->reservations->filter(function ($p) use ($result) {
             return $p->getDate()->format('Y-m-d') >= $result['week_start'] &&
@@ -107,7 +107,7 @@ class Vendor
         }))) >= 3;
     }
 
-    public function hasReservation($date)
+    public function hasReservation($date): bool
     {
         $datetime = new DateTime($date);
 

@@ -4,9 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Reservation;
 use App\Entity\Vendor;
+use App\Service\Helper;
 use App\Service\ReservationService;
-use DateTime;
-use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,18 +19,11 @@ class ReservationsController extends AbstractController
      */
     public function reservations(): Response
     {
-        $repository = $this->getDoctrine()->getRepository(Reservation::class);
+        $reservations = $this->getDoctrine()->getRepository(Reservation::class)->findAll();
 
-        return new Response($this->serialize($repository->findAll()), Response::HTTP_OK, [
+        return new Response(Helper::serialize($reservations), Response::HTTP_OK, [
             'Content-Type' => 'application/json',
         ]);
-    }
-
-    public function serialize($data)
-    {
-        $seriaizer = SerializerBuilder::create()->build();
-
-        return $seriaizer->serialize($data, 'json');
     }
 
     /**
@@ -39,24 +31,24 @@ class ReservationsController extends AbstractController
      */
     public function vendors(): Response
     {
-        $repository = $this->getDoctrine()->getRepository(Vendor::class);
+        $vendors = $this->getDoctrine()->getRepository(Vendor::class)->findAll();
 
-        return new Response($this->serialize($repository->findAll()), Response::HTTP_OK, [
+        return new Response(Helper::serialize($vendors), Response::HTTP_OK, [
             'Content-Type' => 'application/json',
         ]);
     }
 
     /**
-     * @Route("/reservations/store", name="reservation_store")
+     * @Route("/reservations/store", name="reservation_store", methods="post")
      */
-    public function store(Request $request, ReservationService $rs)
+    public function store(Request $request, ReservationService $rs): Response
     {
-        $vendorRepository = $this->getDoctrine()->getRepository(Vendor::class);
-        $vendor = $vendorRepository->find($request->request->get('vendor_id'));
-        $date = $request->request->get('date');
-        $rs->makeReservation($vendor, $date);
+        $vendor = $this->getDoctrine()
+            ->getRepository(Vendor::class)
+            ->find($request->request->get('vendor_id'));
+        $rs->makeReservation($vendor, $request->request->get('date'));
 
-        return new Response($this->serialize($rs->messages), Response::HTTP_OK, [
+        return new Response(Helper::serialize($rs->getMessages()), Response::HTTP_OK, [
             'Content-Type' => 'application/json',
         ]);
     }
